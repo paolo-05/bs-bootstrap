@@ -13,7 +13,7 @@ services:
       - "${POSTGRES_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./imdb_small.sql:/docker-entrypoint-initdb.d/01_imdb_small.sql:ro
+      - ./${BOOTSTRAP_SQL:-imdb_small.sql}:/docker-entrypoint-initdb.d/01_imdb.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s

@@ -1,6 +1,6 @@
 # PostgreSQL con Docker — Quick Start
 
-Setup rapido di un database PostgreSQL con bootstrap automatico da `imdb_small.sql`.
+Setup rapido di un database PostgreSQL con bootstrap automatico da dataset IMDb.
 
 ## Prerequisiti
 
@@ -19,9 +19,13 @@ Se è il primo avvio:
 
 - viene creato il container PostgreSQL
 - viene creato il volume persistente
-- viene importato `imdb_small.sql` automaticamente
+- lo script chiede quale dataset importare:
+  - parziale: `imdb_small.sql`
+  - completo: `imdb.sql`
 
 Nei lanci successivi, i dati restano nel volume e **il bootstrap non viene rieseguito**.
+
+La scelta viene salvata in `.env` nella variabile `BOOTSTRAP_SQL`.
 
 ## Configurazione
 
@@ -43,8 +47,17 @@ Puoi modificarle prima dell'avvio.
 ./start.sh down    # stop mantenendo i dati
 ./start.sh status  # stato container
 ./start.sh logs    # log live di PostgreSQL
+./start.sh dataset # imposta/cambia dataset bootstrap (small/full)
 ./start.sh reset   # cancella anche il volume dati (ripartenza pulita)
 ./start.sh --help  # help
+```
+
+Per applicare un cambio dataset su un bootstrap pulito:
+
+```bash
+./start.sh dataset
+./start.sh reset
+./start.sh up
 ```
 
 ## Connessione al DB
@@ -63,5 +76,5 @@ psql -h localhost -p 5432 -U imdb_user -d imdb
 
 ## Note utili
 
-- Il file `imdb_small.sql` viene eseguito solo quando il data volume è vuoto.
+- Il file impostato in `BOOTSTRAP_SQL` viene eseguito solo quando il data volume è vuoto.
 - Per rifare l'import da zero usa `./start.sh reset` e poi `./start.sh up`.
