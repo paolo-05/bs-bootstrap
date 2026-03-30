@@ -78,3 +78,5 @@ psql -h localhost -p 5432 -U imdb_user -d imdb
 
 - Il file impostato in `BOOTSTRAP_SQL` viene eseguito solo quando il data volume è vuoto.
 - Per rifare l'import da zero usa `./start.sh reset` e poi `./start.sh up`.
+- L'import iniziale viene eseguito in transazione unica: in caso di errore non rimane uno stato parziale.
+- Se hai gia' un volume con import incompleto, esegui `./start.sh reset` prima di riavviare `./start.sh up`.
