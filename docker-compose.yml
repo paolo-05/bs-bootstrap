@@ -21,5 +21,23 @@ services:
       timeout: 5s
       retries: 20
 
+  mongo:
+    image: mongo:7
+    container_name: imdb_mongo
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-imdb_root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-imdb_root_password}
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-imdb}
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongo_data:/data/db
+      - ./docker-init/02_import_mongo.sh:/docker-entrypoint-initdb.d/02_import_mongo.sh:ro
+      - ./movie.json:/docker-bootstrap/movie.json:ro
+
 volumes:
   postgres_data:
+  mongo_data:

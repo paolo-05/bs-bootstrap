@@ -1,6 +1,6 @@
-# PostgreSQL con Docker — Quick Start
+# PostgreSQL + MongoDB con Docker — Quick Start
 
-Setup rapido di un database PostgreSQL con bootstrap automatico da dataset IMDb.
+Setup rapido di PostgreSQL e MongoDB con bootstrap automatico da dataset IMDb (SQL + JSON).
 
 ## Prerequisiti
 
@@ -17,13 +17,14 @@ Dalla cartella del progetto:
 
 Se è il primo avvio:
 
-- viene creato il container PostgreSQL
-- viene creato il volume persistente
-- lo script chiede quale dataset importare:
+- vengono creati i container PostgreSQL e MongoDB
+- vengono creati i volumi persistenti
+- lo script chiede quale dataset importare in PostgreSQL:
   - parziale: `imdb_small.sql`
   - completo: `imdb.sql`
+- MongoDB importa automaticamente `movie.json` nel database configurato
 
-Nei lanci successivi, i dati restano nel volume e **il bootstrap non viene rieseguito**.
+Nei lanci successivi, i dati restano nei volumi e **il bootstrap non viene rieseguito**.
 
 La scelta viene salvata in `.env` nella variabile `BOOTSTRAP_SQL`.
 
@@ -36,6 +37,10 @@ POSTGRES_DB=imdb
 POSTGRES_USER=imdb_user
 POSTGRES_PASSWORD=imdb_password
 POSTGRES_PORT=5432
+MONGO_DB=imdb
+MONGO_ROOT_USER=imdb_root
+MONGO_ROOT_PASSWORD=imdb_root_password
+MONGO_PORT=27017
 ```
 
 Puoi modificarle prima dell'avvio.
@@ -46,7 +51,7 @@ Puoi modificarle prima dell'avvio.
 ./start.sh up      # avvio DB (default)
 ./start.sh down    # stop mantenendo i dati
 ./start.sh status  # stato container
-./start.sh logs    # log live di PostgreSQL
+./start.sh logs    # log live di PostgreSQL e MongoDB
 ./start.sh dataset # imposta/cambia dataset bootstrap (small/full)
 ./start.sh reset   # cancella anche il volume dati (ripartenza pulita)
 ./start.sh --help  # help
@@ -72,11 +77,26 @@ Esempio con `psql` locale:
 
 ```bash
 psql -h localhost -p 5432 -U imdb_user -d imdb
+
+### MongoDB
+
+- Host: `localhost`
+- Porta: valore di `MONGO_PORT` (default `27017`)
+- Database: `MONGO_DB`
+- User: `MONGO_ROOT_USER`
+- Password: `MONGO_ROOT_PASSWORD`
+
+Esempio connection string:
+
+```text
+mongodb://imdb_root:imdb_root_password@localhost:27017/imdb?authSource=admin
+```
 ```
 
 ## Note utili
 
-- Il file impostato in `BOOTSTRAP_SQL` viene eseguito solo quando il data volume è vuoto.
+- Il file impostato in `BOOTSTRAP_SQL` viene eseguito solo quando il volume PostgreSQL è vuoto.
+- L'import di `movie.json` in MongoDB avviene solo quando il volume MongoDB è vuoto.
 - Per rifare l'import da zero usa `./start.sh reset` e poi `./start.sh up`.
 - L'import iniziale viene eseguito in transazione unica: in caso di errore non rimane uno stato parziale.
 - Se hai gia' un volume con import incompleto, esegui `./start.sh reset` prima di riavviare `./start.sh up`.

@@ -20,6 +20,10 @@ POSTGRES_DB=imdb
 POSTGRES_USER=imdb_user
 POSTGRES_PASSWORD=imdb_password
 POSTGRES_PORT=5432
+MONGO_DB=imdb
+MONGO_ROOT_USER=imdb_root
+MONGO_ROOT_PASSWORD=imdb_root_password
+MONGO_PORT=27017
 EOF
 	echo "Creato file .env con valori di default."
 fi
@@ -40,6 +44,22 @@ get_env_var() {
 	local key="$1"
 	awk -F '=' -v key="$key" '$1 == key { value=substr($0, index($0, "=") + 1) } END { print value }' .env
 }
+
+ensure_default_env() {
+	local key="$1"
+	local default_value="$2"
+	local current_value
+
+	current_value="$(get_env_var "$key")"
+	if [[ -z "$current_value" ]]; then
+		set_env_var "$key" "$default_value"
+	fi
+}
+
+ensure_default_env "MONGO_DB" "imdb"
+ensure_default_env "MONGO_ROOT_USER" "imdb_root"
+ensure_default_env "MONGO_ROOT_PASSWORD" "imdb_root_password"
+ensure_default_env "MONGO_PORT" "27017"
 
 prompt_bootstrap_sql() {
 	echo "Scegli il dataset iniziale da importare nel DB:" >&2
@@ -102,7 +122,7 @@ Comandi:
 	up      Avvia il DB (chiede il dataset al primo setup)
 	down    Ferma il DB mantenendo i dati
 	status  Mostra lo stato dei container
-	logs    Mostra i log del DB
+	logs    Mostra i log dei DB
 	dataset Imposta/cambia dataset bootstrap (small/full)
 	reset   Elimina container e volume dati (bootstrap pulito al prossimo up)
 
@@ -117,6 +137,7 @@ case "$command" in
 		ensure_bootstrap_sql
 		"${COMPOSE_CMD[@]}" up -d
 		echo "PostgreSQL in avvio con bootstrap: $(get_env_var "BOOTSTRAP_SQL")"
+		echo "MongoDB in avvio con bootstrap: movie.json"
 		;;
 	down)
 		"${COMPOSE_CMD[@]}" down
@@ -125,7 +146,7 @@ case "$command" in
 		"${COMPOSE_CMD[@]}" ps
 		;;
 	logs)
-		"${COMPOSE_CMD[@]}" logs -f postgres
+		"${COMPOSE_CMD[@]}" logs -f postgres mongo
 		;;
 	dataset)
 		choose_bootstrap_sql
